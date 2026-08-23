@@ -12,6 +12,9 @@ export const STORAGE_KEYS = {
   POMODORO_STATS: 'pomodoroStats',
   POMODORO_TIME: 'pomodoroTime',
   ACTIVE_DATES: 'activeDates',
+  HABITS: 'habits',
+  TIMETABLE: 'timetable',
+  CALENDAR_EVENTS: 'calendarEvents',
 }
 
 export function loadData(key, fallback) {

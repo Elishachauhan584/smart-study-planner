@@ -14,6 +14,9 @@ import Todo from './pages/Todo'
 import Pomodoro from './pages/Pomodoro'
 import Goals from './pages/Goals'
 import Notes from './pages/Notes'
+import Habits from './pages/Habits'
+import Timetable from './pages/Timetable'
+import Calendar from './pages/Calendar'
 
 const WEEKLY_TARGET_HOURS = 25
 
@@ -85,6 +88,9 @@ export default function App() {
               togglePin={notesApi.togglePin}
             />
           )}
+          {view === 'habits' && <Habits />}
+          {view === 'timetable' && <Timetable />}
+          {view === 'calendar' && <Calendar />}
         </main>
       </div>
     </div>

@@ -4,6 +4,9 @@ import {
   ListChecks,
   Timer as TimerIcon,
   StickyNote,
+  Repeat,
+  Table2,
+  Calendar as CalendarIcon,
   Settings as SettingsIcon,
   Zap,
 } from 'lucide-react'
@@ -15,6 +18,9 @@ export const NAV_ITEMS = [
   { key: 'todo', label: 'To-Do', icon: ListChecks },
   { key: 'pomodoro', label: 'Pomodoro', icon: TimerIcon },
   { key: 'notes', label: 'Notes', icon: StickyNote },
+  { key: 'habits', label: 'Habits', icon: Repeat },
+  { key: 'timetable', label: 'Timetable', icon: Table2 },
+  { key: 'calendar', label: 'Calendar', icon: CalendarIcon },
 ]
 
 function SidebarContent({ view, setView, weeklyPct, weeklyHours, weeklyTarget, closeMobile }) {
