@@ -21,6 +21,31 @@ export default function Todo({ tasks, addTask, updateTask, deleteTask, toggleCom
   const total = tasks.length
   const completed = tasks.filter((t) => t.completed).length
 
+  async function handleSave(data) {
+    try {
+      if (editing) await updateTask(editing.id, data)
+      else await addTask(data)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handleToggle(id) {
+    try {
+      await toggleComplete(id)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handleDelete(id) {
+    try {
+      await deleteTask(id)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -72,8 +97,8 @@ export default function Todo({ tasks, addTask, updateTask, deleteTask, toggleCom
             <TodoItem
               key={t.id}
               task={t}
-              onToggle={toggleComplete}
-              onDelete={deleteTask}
+              onToggle={handleToggle}
+              onDelete={handleDelete}
               onEdit={(task) => {
                 setEditing(task)
                 setFormOpen(true)
@@ -84,11 +109,7 @@ export default function Todo({ tasks, addTask, updateTask, deleteTask, toggleCom
       </div>
 
       {formOpen && (
-        <TodoForm
-          initial={editing}
-          onClose={() => setFormOpen(false)}
-          onSave={(data) => (editing ? updateTask(editing.id, data) : addTask(data))}
-        />
+        <TodoForm initial={editing} onClose={() => setFormOpen(false)} onSave={handleSave} />
       )}
     </div>
   )

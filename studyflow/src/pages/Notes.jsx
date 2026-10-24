@@ -15,15 +15,42 @@ export default function Notes({ notes, addNote, updateNote, deleteNote, togglePi
   const pinned = filtered.filter((n) => n.pinned)
   const rest = filtered.filter((n) => !n.pinned)
 
+  async function handleSave(data) {
+    try {
+      if (editing) await updateNote(editing.id, data)
+      else await addNote(data)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handleDelete(id) {
+    try {
+      await deleteNote(id)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handlePin(id) {
+    try {
+      await togglePin(id)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  function openEditor(note) {
+    setEditing(note)
+    setFormOpen(true)
+  }
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-slate-900">Notes</h1>
         <button
-          onClick={() => {
-            setEditing(null)
-            setFormOpen(true)
-          }}
+          onClick={() => openEditor(null)}
           className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
         >
           <Plus size={16} /> New note
@@ -49,7 +76,7 @@ export default function Notes({ notes, addNote, updateNote, deleteNote, togglePi
               <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Pinned</h2>
               <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {pinned.map((n) => (
-                  <NoteCard key={n.id} note={n} onPin={togglePin} onDelete={deleteNote} onEdit={(note) => { setEditing(note); setFormOpen(true) }} />
+                  <NoteCard key={n.id} note={n} onPin={handlePin} onDelete={handleDelete} onEdit={openEditor} />
                 ))}
               </div>
             </>
@@ -57,7 +84,7 @@ export default function Notes({ notes, addNote, updateNote, deleteNote, togglePi
           {rest.length > 0 && (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {rest.map((n) => (
-                <NoteCard key={n.id} note={n} onPin={togglePin} onDelete={deleteNote} onEdit={(note) => { setEditing(note); setFormOpen(true) }} />
+                <NoteCard key={n.id} note={n} onPin={handlePin} onDelete={handleDelete} onEdit={openEditor} />
               ))}
             </div>
           )}
@@ -65,11 +92,7 @@ export default function Notes({ notes, addNote, updateNote, deleteNote, togglePi
       )}
 
       {formOpen && (
-        <NoteEditor
-          initial={editing}
-          onClose={() => setFormOpen(false)}
-          onSave={(data) => (editing ? updateNote(editing.id, data) : addNote(data))}
-        />
+        <NoteEditor initial={editing} onClose={() => setFormOpen(false)} onSave={handleSave} />
       )}
     </div>
   )

@@ -1,31 +1,33 @@
 import { useEffect, useState } from 'react'
-import { STORAGE_KEYS, loadData, saveData, uid } from '../utils/storage'
+import { api } from '../utils/api'
 
 export default function useCalendar() {
-  const [events, setEvents] = useState(() => loadData(STORAGE_KEYS.CALENDAR_EVENTS, []))
+  const [events, setEvents] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    saveData(STORAGE_KEYS.CALENDAR_EVENTS, events)
-  }, [events])
+    api('/events')
+      .then(setEvents)
+      .catch((err) => console.error('Failed to load events', err))
+      .finally(() => setLoading(false))
+  }, [])
 
-  function addEvent({ date, title, time, type, notes }) {
-    const newEvent = {
-      id: uid(),
-      date, // 'YYYY-MM-DD'
-      title: title.trim(),
-      time: time || '',
-      type: type || 'session', // 'exam' | 'deadline' | 'session'
-      notes: notes?.trim() || '',
-    }
-    setEvents((prev) => [...prev, newEvent])
-    return newEvent
+  async function addEvent({ date, title, time, type, notes }) {
+    const created = await api('/events', {
+      method: 'POST',
+      body: { date, title: title.trim(), time: time || '', type: type || 'session', notes: notes?.trim() || '' },
+    })
+    setEvents((prev) => [...prev, created])
+    return created
   }
 
-  function updateEvent(id, updates) {
-    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)))
+  async function updateEvent(id, updates) {
+    const updated = await api(`/events/${id}`, { method: 'PATCH', body: updates })
+    setEvents((prev) => prev.map((e) => (e.id === id ? updated : e)))
   }
 
-  function deleteEvent(id) {
+  async function deleteEvent(id) {
+    await api(`/events/${id}`, { method: 'DELETE' })
     setEvents((prev) => prev.filter((e) => e.id !== id))
   }
 
@@ -33,5 +35,5 @@ export default function useCalendar() {
     return events.filter((e) => e.date === date)
   }
 
-  return { events, addEvent, updateEvent, deleteEvent, eventsForDate }
+  return { events, loading, addEvent, updateEvent, deleteEvent, eventsForDate }
 }

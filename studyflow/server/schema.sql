@@ -1,0 +1,80 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS tasks (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  subject TEXT NOT NULL DEFAULT 'General',
+  priority TEXT NOT NULL DEFAULT 'Medium',
+  due_date TEXT NOT NULL DEFAULT '',
+  completed BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS goals (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  current INTEGER NOT NULL DEFAULT 0,
+  target INTEGER NOT NULL DEFAULT 1,
+  deadline TEXT NOT NULL DEFAULT '',
+  completed BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS notes (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT '',
+  content TEXT NOT NULL DEFAULT '',
+  pinned BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS habits (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  frequency TEXT NOT NULL DEFAULT 'daily',
+  reminder_time TEXT NOT NULL DEFAULT '',
+  days INTEGER[] NOT NULL DEFAULT '{0,1,2,3,4,5,6}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS habit_completions (
+  habit_id INTEGER NOT NULL REFERENCES habits(id) ON DELETE CASCADE,
+  date TEXT NOT NULL,
+  PRIMARY KEY (habit_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS timetable_slots (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  subject TEXT NOT NULL,
+  days TEXT[] NOT NULL,
+  start_time TEXT NOT NULL,
+  end_time TEXT NOT NULL,
+  location TEXT NOT NULL DEFAULT '',
+  instructor TEXT NOT NULL DEFAULT '',
+  color TEXT NOT NULL DEFAULT 'mint'
+);
+
+CREATE TABLE IF NOT EXISTS calendar_events (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  date TEXT NOT NULL,
+  title TEXT NOT NULL,
+  time TEXT NOT NULL DEFAULT '',
+  type TEXT NOT NULL DEFAULT 'session',
+  notes TEXT NOT NULL DEFAULT ''
+);

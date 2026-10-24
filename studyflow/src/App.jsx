@@ -54,6 +54,7 @@ export default function App() {
               tasks={tasksApi.tasks}
               goals={goalsApi.goals}
               pomodoroStats={pomodoro.stats}
+              pomodoro={pomodoro}
               streak={streak}
               addTask={tasksApi.addTask}
               toggleComplete={tasksApi.toggleComplete}
