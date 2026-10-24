@@ -1,40 +1,46 @@
 import { useEffect, useState } from 'react'
-import { STORAGE_KEYS, loadData, saveData, uid } from '../utils/storage'
+import { api } from '../utils/api'
 
 export default function useNotes() {
-  const [notes, setNotes] = useState(() => loadData(STORAGE_KEYS.NOTES, []))
+  const [notes, setNotes] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    saveData(STORAGE_KEYS.NOTES, notes)
-  }, [notes])
+    api('/notes')
+      .then(setNotes)
+      .catch((err) => console.error('Failed to load notes', err))
+      .finally(() => setLoading(false))
+  }, [])
 
-  function addNote({ title, content }) {
-    const now = new Date().toISOString()
-    const newNote = {
-      id: uid(),
-      title: title.trim(),
-      content: content?.trim() || '',
-      pinned: false,
-      createdAt: now,
-      updatedAt: now,
-    }
-    setNotes((prev) => [newNote, ...prev])
-    return newNote
+  async function addNote({ title, content }) {
+    const created = await api('/notes', {
+      method: 'POST',
+      body: {
+        title: title.trim(),
+        content: content?.trim() || '',
+        pinned: false,
+      },
+    })
+    setNotes((prev) => [created, ...prev])
+    return created
   }
 
-  function updateNote(id, updates) {
-    setNotes((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, ...updates, updatedAt: new Date().toISOString() } : n)),
-    )
+  async function updateNote(id, updates) {
+    const updated = await api(`/notes/${id}`, { method: 'PATCH', body: updates })
+    setNotes((prev) => prev.map((n) => (n.id === id ? updated : n)))
   }
 
-  function deleteNote(id) {
+  async function deleteNote(id) {
+    await api(`/notes/${id}`, { method: 'DELETE' })
     setNotes((prev) => prev.filter((n) => n.id !== id))
   }
 
-  function togglePin(id) {
-    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n)))
+  async function togglePin(id) {
+    const note = notes.find((n) => n.id === id)
+    if (!note) return
+    const updated = await api(`/notes/${id}`, { method: 'PATCH', body: { pinned: !note.pinned } })
+    setNotes((prev) => prev.map((n) => (n.id === id ? updated : n)))
   }
 
-  return { notes, addNote, updateNote, deleteNote, togglePin }
+  return { notes, loading, addNote, updateNote, deleteNote, togglePin }
 }

@@ -1,84 +1,52 @@
 import { useEffect, useState } from 'react'
-import {
-  STORAGE_KEYS,
-  loadData,
-  saveData,
-  uid,
-  markActiveToday,
-} from '../utils/storage'
+import { api } from '../utils/api'
+import { markActiveToday } from '../utils/storage'
 
 export default function useTasks() {
-  const [tasks, setTasks] = useState(() =>
-    loadData(STORAGE_KEYS.TASKS, [])
-  )
+  const [tasks, setTasks] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    saveData(STORAGE_KEYS.TASKS, tasks)
-  }, [tasks])
+    api('/tasks')
+      .then(setTasks)
+      .catch((err) => console.error('Failed to load tasks', err))
+      .finally(() => setLoading(false))
+  }, [])
 
-  function addTask({
-    title,
-    description,
-    subject,
-    priority,
-    dueDate,
-  }) {
-    const newTask = {
-      id: uid(),
-      title: title.trim(),
-      description: description?.trim() || '',
-      subject: subject?.trim() || 'General',
-      priority: priority || 'Medium',
-      dueDate: dueDate || '',
-      completed: false,
-      createdAt: new Date().toISOString(),
-    }
-
-    setTasks((prev) => [newTask, ...prev])
-
-    return newTask
+  async function addTask({ title, description, subject, priority, dueDate }) {
+    const created = await api('/tasks', {
+      method: 'POST',
+      body: {
+        title: title.trim(),
+        description: description?.trim() || '',
+        subject: subject?.trim() || 'General',
+        priority: priority || 'Medium',
+        dueDate: dueDate || '',
+        completed: false,
+      },
+    })
+    setTasks((prev) => [created, ...prev])
+    return created
   }
 
-  function updateTask(id, updates) {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id
-          ? { ...task, ...updates }
-          : task
-      )
-    )
+  async function updateTask(id, updates) {
+    const updated = await api(`/tasks/${id}`, { method: 'PATCH', body: updates })
+    setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)))
   }
 
-  function deleteTask(id) {
-    setTasks((prev) =>
-      prev.filter((task) => task.id !== id)
-    )
+  async function deleteTask(id) {
+    await api(`/tasks/${id}`, { method: 'DELETE' })
+    setTasks((prev) => prev.filter((t) => t.id !== id))
   }
 
-  function toggleComplete(id) {
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id !== id) return task
-
-        const completed = !task.completed
-
-        if (completed) {
-          markActiveToday()
-        }
-
-        return {
-          ...task,
-          completed,
-        }
-      })
-    )
+  async function toggleComplete(id) {
+    const task = tasks.find((t) => t.id === id)
+    if (!task) return
+    const completed = !task.completed
+    const updated = await api(`/tasks/${id}`, { method: 'PATCH', body: { completed } })
+    if (completed) markActiveToday()
+    setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)))
   }
 
-  return {
-    tasks,
-    addTask,
-    updateTask,
-    deleteTask,
-    toggleComplete,
-  }
+  return { tasks, loading, addTask, updateTask, deleteTask, toggleComplete }
 }

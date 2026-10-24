@@ -8,6 +8,31 @@ export default function Goals({ goals, addGoal, updateGoal, deleteGoal, updatePr
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState(null)
 
+  async function handleSave(data) {
+    try {
+      if (editing) await updateGoal(editing.id, data)
+      else await addGoal(data)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handleDelete(id) {
+    try {
+      await deleteGoal(id)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handleProgress(id, value) {
+    try {
+      await updateProgress(id, value)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -34,8 +59,8 @@ export default function Goals({ goals, addGoal, updateGoal, deleteGoal, updatePr
             <GoalCard
               key={g.id}
               goal={g}
-              onDelete={deleteGoal}
-              onProgress={updateProgress}
+              onDelete={handleDelete}
+              onProgress={handleProgress}
               onEdit={(goal) => {
                 setEditing(goal)
                 setFormOpen(true)
@@ -46,11 +71,7 @@ export default function Goals({ goals, addGoal, updateGoal, deleteGoal, updatePr
       )}
 
       {formOpen && (
-        <GoalForm
-          initial={editing}
-          onClose={() => setFormOpen(false)}
-          onSave={(data) => (editing ? updateGoal(editing.id, data) : addGoal(data))}
-        />
+        <GoalForm initial={editing} onClose={() => setFormOpen(false)} onSave={handleSave} />
       )}
     </div>
   )

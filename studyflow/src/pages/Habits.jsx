@@ -7,7 +7,7 @@ import Modal from '../components/Modal'
 import EmptyState from '../components/EmptyState'
 
 export default function Habits() {
-  const { habits, addHabit, deleteHabit, toggleToday, getHabitStreak } = useHabits()
+  const { habits, loading, addHabit, deleteHabit, toggleToday, getHabitStreak } = useHabits()
   const [formOpen, setFormOpen] = useState(false)
   const today = new Date().toISOString().slice(0, 10)
   const todayLabel = new Date().toLocaleDateString('en-US', {
@@ -17,9 +17,29 @@ export default function Habits() {
     year: 'numeric',
   })
 
-  function handleSave(data) {
-    addHabit(data)
-    setFormOpen(false)
+  async function handleSave(data) {
+    try {
+      await addHabit(data)
+      setFormOpen(false)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handleToggle(id) {
+    try {
+      await toggleToday(id)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handleDelete(id) {
+    try {
+      await deleteHabit(id)
+    } catch (err) {
+      alert(err.message)
+    }
   }
 
   return (
@@ -39,8 +59,10 @@ export default function Habits() {
           </button>
         </div>
 
-        {habits.length === 0 ? (
-          <EmptyState title="No habits yet" description="Add your first habit to start building a streak." />
+        {loading ? (
+          <p className="py-6 text-center text-sm text-slate-400">Loading habits...</p>
+        ) : habits.length === 0 ? (
+          <EmptyState text="No habits yet — add your first one to start a streak." />
         ) : (
           <div className="space-y-3">
             {habits.map((habit) => (
@@ -49,8 +71,8 @@ export default function Habits() {
                 habit={habit}
                 done={habit.completedDates.includes(today)}
                 streak={getHabitStreak(habit)}
-                onToggle={() => toggleToday(habit.id)}
-                onDelete={() => deleteHabit(habit.id)}
+                onToggle={() => handleToggle(habit.id)}
+                onDelete={() => handleDelete(habit.id)}
               />
             ))}
           </div>

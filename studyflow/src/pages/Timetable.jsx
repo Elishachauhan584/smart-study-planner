@@ -7,7 +7,7 @@ import Modal from '../components/Modal'
 import EmptyState from '../components/EmptyState'
 
 export default function Timetable() {
-  const { slots, addSlot, deleteSlot } = useTimetable()
+  const { slots, loading, addSlot, deleteSlot } = useTimetable()
   const [formOpen, setFormOpen] = useState(false)
   const todayLabel = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -16,9 +16,21 @@ export default function Timetable() {
     year: 'numeric',
   })
 
-  function handleSave(data) {
-    addSlot(data)
-    setFormOpen(false)
+  async function handleSave(data) {
+    try {
+      await addSlot(data)
+      setFormOpen(false)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handleDelete(id) {
+    try {
+      await deleteSlot(id)
+    } catch (err) {
+      alert(err.message)
+    }
   }
 
   return (
@@ -38,10 +50,12 @@ export default function Timetable() {
           </button>
         </div>
 
-        {slots.length === 0 ? (
-          <EmptyState title="No classes yet" description="Add your first class to build your weekly schedule." />
+        {loading ? (
+          <p className="py-6 text-center text-sm text-slate-400">Loading timetable...</p>
+        ) : slots.length === 0 ? (
+          <EmptyState text="No classes yet — add your first class to build your weekly schedule." />
         ) : (
-          <TimetableGrid slots={slots} onDelete={deleteSlot} />
+          <TimetableGrid slots={slots} onDelete={handleDelete} />
         )}
       </div>
 

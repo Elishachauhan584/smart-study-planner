@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext'
 import {
   LayoutDashboard,
   Target,
@@ -8,6 +9,7 @@ import {
   Table2,
   Calendar as CalendarIcon,
   Settings as SettingsIcon,
+  LogOut,
   Zap,
 } from 'lucide-react'
 import { cx } from '../utils/helpers'
@@ -24,6 +26,8 @@ export const NAV_ITEMS = [
 ]
 
 function SidebarContent({ view, setView, weeklyPct, weeklyHours, weeklyTarget, closeMobile }) {
+  const { user, logout } = useAuth()
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 px-6 py-6">
@@ -71,9 +75,19 @@ function SidebarContent({ view, setView, weeklyPct, weeklyHours, weeklyTarget, c
         </div>
       </div>
 
-      <button className="mx-3 mb-6 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+      <div className="mx-3 mb-2 px-3 text-xs text-slate-400">Signed in as {user?.name}</div>
+
+      <button className="mx-3 mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
         <SettingsIcon size={18} />
         Settings
+      </button>
+
+      <button
+        onClick={logout}
+        className="mx-3 mb-6 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+      >
+        <LogOut size={18} />
+        Log out
       </button>
     </div>
   )

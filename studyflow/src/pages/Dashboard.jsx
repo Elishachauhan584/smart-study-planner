@@ -5,6 +5,7 @@ import StatCard from '../components/StatCard'
 import EmptyState from '../components/EmptyState'
 import useHabits from '../hooks/useHabits'
 import useTimetable from '../hooks/useTimetable'
+import PomodoroMini from '../components/PomodoroMini'
 
 const DAY_ABBR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -16,7 +17,13 @@ function formatTime(t) {
   return `${hour12}:${String(m).padStart(2, '0')} ${period}`
 }
 
-export default function Dashboard({ tasks, goals, pomodoroStats, streak, addTask, toggleComplete, setView }) {
+function dayLabel(offset, day) {
+  if (offset === 0) return 'Today'
+  if (offset === 1) return 'Tomorrow'
+  return day
+}
+
+export default function Dashboard({ tasks, goals, pomodoroStats, pomodoro, streak, addTask, toggleComplete, setView }) {
   const [quickTitle, setQuickTitle] = useState('')
   const { habits, getHabitStreak } = useHabits()
   const { slots } = useTimetable()
@@ -27,17 +34,30 @@ export default function Dashboard({ tasks, goals, pomodoroStats, streak, addTask
     ? Math.round(goals.reduce((sum, g) => sum + pct(g.current, g.target), 0) / goals.length)
     : 0
 
-  const todayLabel = new Date().toLocaleDateString('en-US', {
+  const now = new Date()
+  const nowMinutes = now.getHours() * 60 + now.getMinutes()
+
+  const todayLabel = now.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   })
 
-  const todayAbbr = DAY_ABBR[new Date().getDay()]
-  const todaysClasses = slots
-    .filter((s) => s.days.includes(todayAbbr))
-    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+  // Next 3 classes across the whole week, starting from now
+  const upcomingClasses = slots
+    .flatMap((s) =>
+      (s.days || []).map((day) => {
+        const [sh, sm] = s.startTime.split(':').map(Number)
+        const [eh, em] = s.endTime.split(':').map(Number)
+        let offset = (DAY_ABBR.indexOf(day) - now.getDay() + 7) % 7
+        // a class that already ended today next happens in 7 days
+        if (offset === 0 && eh * 60 + em < nowMinutes) offset = 7
+        return { ...s, day, offset, startMin: sh * 60 + sm }
+      }),
+    )
+    .sort((a, b) => a.offset - b.offset || a.startMin - b.startMin)
+    .slice(0, 3)
 
   const topHabits = [...habits]
     .map((h) => ({ ...h, streakCount: getHabitStreak(h) }))
@@ -54,7 +74,7 @@ export default function Dashboard({ tasks, goals, pomodoroStats, streak, addTask
   return (
     <div>
       <p className="text-sm text-slate-400">{todayLabel}</p>
-      <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+      <h1 className="mt-1 text-2xl font-bold text-slate-900">Dashboard</h1>
       <p className="mb-6 text-sm text-slate-500">Here's your study snapshot for today.</p>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -70,7 +90,7 @@ export default function Dashboard({ tasks, goals, pomodoroStats, streak, addTask
         <StatCard label="Goals progress" value={`${overallGoalPct}%`} sub={`${goals.length} goals tracked`} icon={Target} tone="amber" />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
+      <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Today's tasks</h2>
           <button onClick={() => setView('todo')} className="flex items-center text-sm font-medium text-indigo-600 hover:underline">
@@ -111,7 +131,8 @@ export default function Dashboard({ tasks, goals, pomodoroStats, streak, addTask
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <PomodoroMini pomodoro={pomodoro} onOpen={() => setView('pomodoro')} />
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
@@ -153,15 +174,15 @@ export default function Dashboard({ tasks, goals, pomodoroStats, streak, addTask
             </button>
           </div>
 
-          {todaysClasses.length === 0 ? (
-            <EmptyState text="No classes today." />
+          {upcomingClasses.length === 0 ? (
+            <EmptyState text="No upcoming classes." />
           ) : (
             <div className="space-y-4">
-              {todaysClasses.slice(0, 3).map((s) => (
-                <div key={s.id} className="flex gap-3 border-l-2 border-indigo-500 pl-3">
+              {upcomingClasses.map((s) => (
+                <div key={`${s.id}-${s.day}`} className="flex gap-3 border-l-2 border-indigo-500 pl-3">
                   <div>
                     <p className="text-xs font-medium text-indigo-600">
-                      {formatTime(s.startTime)} — {formatTime(s.endTime)}
+                      {dayLabel(s.offset, s.day)} · {formatTime(s.startTime)} — {formatTime(s.endTime)}
                     </p>
                     <p className="text-sm font-semibold text-slate-800">{s.subject}</p>
                     {s.location && <p className="text-xs text-slate-400">{s.location}</p>}
@@ -172,7 +193,6 @@ export default function Dashboard({ tasks, goals, pomodoroStats, streak, addTask
           )}
         </div>
       </div>
-
     </div>
   )
 }
