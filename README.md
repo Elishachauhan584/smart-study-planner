@@ -40,6 +40,9 @@ Most students, in school and college, manage their studies in pieces. Assignment
 - bcrypt
 
 ## Screenshot
+![StudyFlow Dashboard](Screenshots/dashboardsp.PNG)
+![StudyFlow Dashboard](Screenshots/dashboardsp2.PNG)
+
 
 ## Prerequisites
 What does someone need installed before starting the project?
@@ -107,6 +110,6 @@ things that aren't implemented yet or have restrictions
 
 
 ## Team & Collaboration
-* Surbhi Verma  - Backend 
-* Elisha Chauhan - Frontend 
+* @YuiSurbhi  - Backend 
+* @Elishachauhan584 - Frontend 
 * Yashu Pal - specific modules
