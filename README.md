@@ -15,15 +15,13 @@ Most students, in school and college, manage their studies in pieces. Assignment
 
 
 ## Features
-* Authentication – Register and log in securely.
-* Dashboard – View study hours, completed tasks, streak and goal progress.
 * Design: Minimal, responsive and distraction-free interface.
 * To-Do - add/manage tasks.
 * Pomodoro - set a focus duration → work → take a break.
-* Notes - Keep your daily notes in the app
-* Habits - add your habits to remind yourself to do daily
-* Timetable - set your daily timetable for your classes or anything
-* Calendar - Show you date 
+* Notes - Keep your daily notes in the app.
+* Habits - add and track your daily habits and streaks.
+* Timetable - set your daily timetable for classes or other activities.
+* Calendar - View dates and keep track of scheduled activities.
 * Goals – Create and manage study goals.
 
 ## Tech Stack
@@ -51,7 +49,10 @@ What does someone need installed before starting the project?
 * Git — required to clone the repository and manage the project with version control.
 
 ## Installation & Setup
-* Clone the repo and enter the folder.
+* ```
+  git clone <repository-url>
+     cd studyflow
+  ```
 * Create the ```studyflow``` database in pgAdmin.
 * Run ```server/schema.sql``` in the Query Tool to create the tables.
 * Create ```server/.env``` from ```server/.env.example``` and fill in their own password and secret.
@@ -101,7 +102,9 @@ server/
 
 ## Known Limitations & Future Scope
 ### Limitations
-things that aren't implemented yet or have restrictions
+* Pomodoro study statistics are currently stored in the browser.
+* Password reset functionality is not implemented yet.
+* The project currently requires a local PostgreSQL database to run.
 ### Future Scope
 * visual progress charts, so students can see their improvement over weeks and months, not just today
 * personalization, such as themes and settings, and calm ambient soundtracks in the Pomodoro timer.
@@ -110,6 +113,6 @@ things that aren't implemented yet or have restrictions
 
 
 ## Team & Collaboration
-* @YuiSurbhi  - Backend 
-* @Elishachauhan584 - Frontend 
+* [Surbhi Verma](https://github.com/YuiSurbhi) - Backend
+* [Elisha Chauhan](https://github.com/Elishachauhan584) - Frontend
 * Yashu Pal - specific modules
